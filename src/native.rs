@@ -27,7 +27,7 @@ pub fn install() {
   }
 }
 
-unsafe extern "C" fn compare(registers: &mut Registers, owner_register: usize) {
+unsafe extern "C" fn compare(registers: &mut Registers, owner: usize) {
   let frame = registers.x[29] as usize;
   let score_ptr = (frame - profile::BEST_SCORE) as *mut i32;
   let index_ptr = (frame - profile::BEST_INDEX) as *mut i32;
@@ -44,8 +44,7 @@ unsafe extern "C" fn compare(registers: &mut Registers, owner_register: usize) {
       unsafe { core::mem::transmute(base + profile::ITEM_AT) };
     let critical: unsafe extern "C" fn(usize, usize) -> i32 =
       unsafe { core::mem::transmute(base + profile::ITEM_CRITICAL) };
-    let items =
-      unsafe { *((registers.x[owner_register] as usize + profile::UNIT_ITEMS) as *const usize) };
+    let items = unsafe { *((owner + profile::UNIT_ITEMS) as *const usize) };
     let item = unsafe { item_at(items, previous_index, 0) };
     let previous = Candidate { score: previous_score, critical: unsafe { critical(item, 0) } };
     let current = Candidate { score, critical: unsafe { critical(registers.x[26] as usize, 0) } };
@@ -67,10 +66,11 @@ unsafe extern "C" fn compare(registers: &mut Registers, owner_register: usize) {
   registers.x[20] = 0;
 }
 
-// Each compiled copy has its own continuation and receiver register. The current
-// item is x26 in all three; Critical is NOT in a shared register after inlining.
+// Each compiled copy has its own continuation and receiver source. SetupScope
+// keeps the unit at original sp+0x20 (fp-0x50); x25 is outer calculator metadata.
+// The current item is x26 in all three compiled copies.
 macro_rules! comparison_bridge {
-  ($bridge:ident, $trampoline:ident, $owner:literal) => {
+  ($bridge:ident, $trampoline:ident, $($owner_load:literal),+) => {
     static mut $trampoline: *mut c_void = core::ptr::null_mut();
 
     /// Preserve the interrupted native state, then resume this site's trampoline.
@@ -114,7 +114,7 @@ macro_rules! comparison_bridge {
         "stp q28, q29, [sp, #0x2c0]",
         "stp q30, q31, [sp, #0x2e0]",
         "mov x0, sp",
-        "mov x1, #{owner}",
+        $($owner_load,)+
         "bl {compare}",
         "ldp q0, q1, [sp, #0x100]",
         "ldp q2, q3, [sp, #0x120]",
@@ -156,12 +156,11 @@ macro_rules! comparison_bridge {
         "br x17",
         compare = sym compare,
         trampoline = sym $trampoline,
-        owner = const $owner,
       );
     }
   };
 }
 
-comparison_bridge!(unit_bridge, UNIT_TRAMPOLINE, 25);
-comparison_bridge!(setup_bridge, SETUP_TRAMPOLINE, 25);
-comparison_bridge!(side_bridge, SIDE_TRAMPOLINE, 27);
+comparison_bridge!(unit_bridge, UNIT_TRAMPOLINE, "ldr x1, [sp, #0xc8]");
+comparison_bridge!(setup_bridge, SETUP_TRAMPOLINE, "ldr x1, [sp, #0xe8]", "ldur x1, [x1, #-0x50]");
+comparison_bridge!(side_bridge, SIDE_TRAMPOLINE, "ldr x1, [sp, #0xd8]");

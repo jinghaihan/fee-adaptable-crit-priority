@@ -24,6 +24,10 @@ SITES = CONTRACT["comparisons"]
 COUNTER = 0x1000000
 
 
+class NativeBoundsError(RuntimeError):
+  """The unmodified UnitItemList getter reached its native out-of-range path."""
+
+
 def metadata(data):
   mod, = struct.unpack_from("<I", data, 4)
   relative, = struct.unpack_from("<i", data, mod + 4)
@@ -96,8 +100,11 @@ class Sandbox:
       copied += struct.pack("<IIQ", 0x58000051, 0xD61F0220, GAME + site["offset"] + 20)
       cpu.mem_write(trampoline, bytes(copied))
       self.write(GAME + site["loop_resume"], bytes(4))
-    for address in (CONTRACT["item_at_offset"], CONTRACT["item_critical_offset"]):
-      self.write(GAME + address, bytes(4))
+    self.write(GAME + CONTRACT["item_at_offset"], bytes.fromhex(CONTRACT["item_at_bytes"]))
+    self.write(GAME + CONTRACT["item_critical_offset"], bytes(4))
+    self.write(GAME + 0x492290, bytes(4))
+    save = CONTRACT["setup_owner_save"]
+    self.write(GAME + save["offset"], bytes.fromhex(save["bytes"]))
     for address, value in ((0x6284190, 0x12345678), (0x6284188, 0x23456789), (0x62840C8, 0x3456789A)):
       self.write(GAME + address, struct.pack("<Q", value))
     cpu.hook_add(UC_HOOK_CODE, self.on_code)
@@ -146,11 +153,14 @@ class Sandbox:
       assert cpu.reg_read(reg.UC_ARM64_REG_NZCV) == flags
       return
     if address == GAME + CONTRACT["item_at_offset"]:
-      assert self.x(0) == GAME + 0x7002000 and self.x(2) == 0
+      assert self.x(2) == 0
       index = self.x(1)
       self.calls.append(("item", index))
-      self.return_value(self.items[index])
+      # Execute the real getter and its array bound check. A metadata object
+      # passed as Unit must fail here, rather than being accepted by a stub.
       return
+    if address == GAME + 0x492290:
+      raise NativeBoundsError("UnitItemList.get_Item: native array index out of range")
     if address == GAME + CONTRACT["item_critical_offset"]:
       assert self.x(1) == 0
       item = self.x(0)
@@ -195,28 +205,45 @@ class Sandbox:
     cpu = self.cpu
     owner, items = GAME + 0x7001000, GAME + 0x7002000
     self.write(owner + 0xB8, struct.pack("<Q", items))
+    array, metadata, invalid_list, empty_array = [GAME + n for n in (0x7003000, 0x7004000, 0x7005000, 0x7006000)]
+    self.write(items + 0x10, struct.pack("<Q", array))
+    self.write(array + 0x18, struct.pack("<Q", 8))
+    self.write(array + 0x20, bytes(8 * 8))
+    # Real SetupScope x25 holds calculator metadata. Give it a distinct,
+    # readable layout whose mistaken Unit-item-list read has zero capacity.
+    self.write(metadata + 0xB8, struct.pack("<Q", invalid_list))
+    self.write(invalid_list + 0x10, struct.pack("<Q", empty_array))
+    self.write(empty_array + 0x18, bytes(8))
     site = SITES[site_index]
     frame = STACK + 0x1E000
     stack = frame - site["frame_offset"]
     cpu.mem_write(frame - 16, struct.pack("<ii", -1, -1))
     cpu.mem_write(stack + 24, struct.pack("<QQ", 0x87654321, 0x98765432))
+    if site_index == 1:
+      cpu.reg_write(reg.UC_ARM64_REG_X27, owner)
+      cpu.reg_write(reg.UC_ARM64_REG_SP, stack)
+      # Execute the constructor's actual STR x27,[sp,#0x20].
+      save = CONTRACT["setup_owner_save"]
+      self.run(GAME + save["offset"], GAME + save["offset"] + 4)
     self.items, self.critical = {}, {}
     for index, (score, critical) in enumerate(candidates):
       item = GAME + 0x7100000 + index * 0x100
       self.items[index], self.critical[item] = item, critical
+      self.write(array + 0x20 + index * 8, struct.pack("<Q", item))
       for n in range(31):
         cpu.reg_write(getattr(reg, f"UC_ARM64_REG_X{n}"), 0xA0000000 + n)
       for n in range(32):
         cpu.reg_write(getattr(reg, f"UC_ARM64_REG_Q{n}"), (n + 1) * 0x123456789ABCDEF123456789ABCDEF)
       for n, value in ((19, score), (20, 0), (22, critical), (24, index), (25, owner), (29, frame)):
         cpu.reg_write(getattr(reg, f"UC_ARM64_REG_X{n}"), value & 0xFFFFFFFF)
-      # Inlined copies reuse x22/x25 for unrelated values. Read Critical through
-      # the native item getter and use each site's independently pinned receiver.
+      # Keep the caller's Unit and calculator metadata distinct. SetupScope
+      # recovers Unit from its saved stack slot, never from metadata in x25.
       cpu.reg_write(reg.UC_ARM64_REG_X0, 0)  # native CBZ from the no-augmentation path
       cpu.reg_write(reg.UC_ARM64_REG_X22, 0xDEAD2222)
-      cpu.reg_write(reg.UC_ARM64_REG_X25, 0xDEAD2525)
+      cpu.reg_write(reg.UC_ARM64_REG_X25, metadata)
       cpu.reg_write(reg.UC_ARM64_REG_X26, item)
-      cpu.reg_write(getattr(reg, f"UC_ARM64_REG_X{site['owner_register']}"), owner)
+      if "owner_register" in site:
+        cpu.reg_write(getattr(reg, f"UC_ARM64_REG_X{site['owner_register']}"), owner)
       cpu.reg_write(reg.UC_ARM64_REG_X29, frame)
       cpu.reg_write(reg.UC_ARM64_REG_SP, stack)
       cpu.reg_write(reg.UC_ARM64_REG_NZCV, 0xA0000000)
@@ -227,12 +254,12 @@ class Sandbox:
       )
       self.run(GAME + site["arrival"], GAME + site["loop_resume"])
       assert cpu.reg_read(reg.UC_ARM64_REG_SP) == stack
-      assert self.x(20) == owner
+      assert self.x(20) == (metadata if site_index == 1 else owner)
       assert self.x(21) == 0x87654321
       assert self.x(19) == (0x12345678 if site_index == 0 else 0x23456789)
       if site_index == 1:
         assert self.x(25) == 0x3456789A
-        assert self.x(27) == 0x98765432
+        assert self.x(27) == owner
       elif site_index == 2:
         assert self.x(27) == 0x12345678
     score, index = struct.unpack("<ii", cpu.mem_read(frame - 16, 8))
@@ -297,6 +324,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument("nro", type=Path)
   parser.add_argument("--regression-before", type=Path, help="also reproduce the missing inlined hooks using an actual v0.1.1 NRO")
+  parser.add_argument("--regression-crash-before", type=Path, help="reproduce the wrong SetupScope receiver using an actual v0.1.2 NRO")
   args = parser.parse_args()
   verify_nro(args.nro)
   if args.regression_before:
@@ -306,4 +334,15 @@ if __name__ == "__main__":
       for distance in (1, 2):
         assert before.select(panette_weapons(distance), site_index) == 4
     print("Actual v0.1.1 NRO reproduces Light Brand selection at 1 and 2 range in both inlined callers")
+  if args.regression_crash_before:
+    verify_nro(args.regression_crash_before)
+    for distance in (1, 2):
+      before = Sandbox(args.regression_crash_before.read_bytes())
+      try:
+        before.select(panette_weapons(distance), 1)
+      except NativeBoundsError:
+        pass
+      else:
+        raise AssertionError("v0.1.2 failed to reproduce the native bounds exception")
+    print("Actual v0.1.2 NRO reproduces the logged UnitItemList.get_Item bounds exception with real SetupScope metadata/Unit separation")
   exercise(args.nro.read_bytes())

@@ -57,10 +57,10 @@
       "loop_resume": 26970488,
       "arrival": 26973684,
       "arrival_bytes": "800100b4",
-      "owner_register": 25,
       "frame_offset": 112,
       "adrp_offset": 12,
-      "adrp_register": 25
+      "adrp_register": 25,
+      "owner_frame_offset": -80
     },
     {
       "name": "battle_conditions",
@@ -75,5 +75,10 @@
       "adrp_offset": 8,
       "adrp_register": 19
     }
-  ]
+  ],
+  "item_at_bytes": "fd7bbfa9fd030091080840f9091940b93f01016ba900005408cd218b001140f9fd7bc1a8c0035fd672659397e1031faa24659397",
+  "setup_owner_save": {
+    "offset": 26969052,
+    "bytes": "fb1300f9"
+  }
 }

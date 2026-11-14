@@ -91,6 +91,11 @@ def verify_game(path: Path) -> int:
   for body in contract["bodies"]:
     if hashlib.sha256(read(body["offset"], body["size"])).hexdigest() != body["sha256"]:
       raise ValueError("native body mismatch: " + body["name"])
+  if read(contract["item_at_offset"], len(bytes.fromhex(contract["item_at_bytes"]))).hex() != contract["item_at_bytes"]:
+    raise ValueError("native item-list getter fixture changed")
+  save = contract["setup_owner_save"]
+  if read(save["offset"], 4).hex() != save["bytes"]:
+    raise ValueError("SetupScope saved Unit source changed")
   profile = (ROOT / "src/profile.rs").read_text()
   for site in contract["comparisons"]:
     expected_bytes = bytes.fromhex(site["bytes"])

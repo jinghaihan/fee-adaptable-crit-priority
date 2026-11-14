@@ -91,11 +91,28 @@ def verify_game(path: Path) -> int:
   for body in contract["bodies"]:
     if hashlib.sha256(read(body["offset"], body["size"])).hexdigest() != body["sha256"]:
       raise ValueError("native body mismatch: " + body["name"])
-  if read(contract["comparison_offset"], 48).hex() != contract["comparison_bytes"]:
-    raise ValueError("comparison register/stack contract changed")
   profile = (ROOT / "src/profile.rs").read_text()
-  for name, key in (("COMPARE", "comparison_offset"), ("ITEM_AT", "item_at_offset"),
-                    ("ITEM_CRITICAL", "item_critical_offset")):
+  for site in contract["comparisons"]:
+    expected_bytes = bytes.fromhex(site["bytes"])
+    if read(site["offset"], len(expected_bytes)) != expected_bytes:
+      raise ValueError("comparison contract changed: " + site["name"])
+    if read(site["arrival"], 4).hex() != site["arrival_bytes"]:
+      raise ValueError("native branch to comparison changed: " + site["name"])
+    constant = site["constant"]
+    actual = int(re.search(rf"pub const {constant}: usize = (0x[0-9A-Fa-f]+)", profile)[1], 16)
+    if actual != site["offset"]:
+      raise ValueError("comparison profile mismatch: " + constant)
+  # The compiler emitted this score comparison in the public method and in two
+  # callers. Check all occurrences rather than trusting the public binding alone.
+  text = sections[0][1]
+  prefix = bytes.fromhex(contract["comparisons"][0]["bytes"])[:8]
+  found, cursor = set(), 0
+  while (cursor := text.find(prefix, cursor)) >= 0:
+    found.add(cursor)
+    cursor += 4
+  if found != {site["offset"] for site in contract["comparisons"]}:
+    raise ValueError("not all compiled Adaptable comparison copies are covered")
+  for name, key in (("ITEM_AT", "item_at_offset"), ("ITEM_CRITICAL", "item_critical_offset")):
     actual = int(re.search(rf"pub const {name}: usize = (0x[0-9A-Fa-f]+)", profile)[1], 16)
     if actual != contract[key]:
       raise ValueError("profile mismatch: " + name)

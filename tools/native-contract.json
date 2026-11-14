@@ -18,12 +18,62 @@
       "offset": 33262752,
       "size": 52,
       "sha256": "c47aebd5b466e9b39b3ce9aedc03dff6cd8f963789ab99f5fb95777b776d2176"
+    },
+    {
+      "name": "BattleInfo.SetupScope..ctor",
+      "offset": 26968240,
+      "size": 5808,
+      "sha256": "20cfaad1d54a1d1a8a57d5eebb7516550dde2a8ad4ece1b1b7617f876214a98b"
+    },
+    {
+      "name": "BattleInfoSide.ComplementConditions",
+      "offset": 31980912,
+      "size": 6016,
+      "sha256": "c3cd5776e8498c9ac8e21b3b3fc7a499d2c1f304a3801c6c6b7690158ddd7720"
     }
   ],
-  "comparison_offset": 27572036,
-  "comparison_bytes": "a9035fb86802140bd34102b0f40319aa3f01086b09b1891aa8435fb808b3881aa9233e29f50f40f973ca40f9d3fcff17",
-  "loop_resume": 27568828,
   "range_score": 16777216,
   "item_critical_offset": 33225104,
-  "item_at_offset": 33262752
+  "item_at_offset": 33262752,
+  "comparisons": [
+    {
+      "name": "standalone",
+      "constant": "COMPARE_UNIT",
+      "offset": 27572036,
+      "bytes": "a9035fb86802140bd34102b0f40319aa3f01086b09b1891aa8435fb808b3881aa9233e29f50f40f973ca40f9d3fcff17",
+      "loop_resume": 27568828,
+      "arrival": 27571988,
+      "arrival_bytes": "800100b4",
+      "owner_register": 25,
+      "frame_offset": 80,
+      "adrp_offset": 8,
+      "adrp_register": 19
+    },
+    {
+      "name": "battle_setup",
+      "constant": "COMPARE_SETUP",
+      "offset": 26973732,
+      "bytes": "a9035fb86802140bf40319aa594602f03f01086b09b1891aa8435fb808b3881aa9233e29f5ef41a9396740f9534602f073c640f9c8fcff17",
+      "loop_resume": 26970488,
+      "arrival": 26973684,
+      "arrival_bytes": "800100b4",
+      "owner_register": 25,
+      "frame_offset": 112,
+      "adrp_offset": 12,
+      "adrp_register": 25
+    },
+    {
+      "name": "battle_conditions",
+      "constant": "COMPARE_SIDE",
+      "offset": 31982684,
+      "bytes": "a9035fb86802140b33200290f4031baa3f01086b09b1891aa8435fb808b3881aa9233e29f50f40f973c640f93b2002907bcb40f9",
+      "loop_resume": 31982736,
+      "arrival": 31985860,
+      "arrival_bytes": "c09cffb4",
+      "owner_register": 27,
+      "frame_offset": 96,
+      "adrp_offset": 8,
+      "adrp_register": 19
+    }
+  ]
 }

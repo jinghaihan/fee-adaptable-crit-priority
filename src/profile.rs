@@ -3,7 +3,9 @@ pub const BUILD_ID: [u8; 16] =
 pub const BUILD_ID_OFFSET: usize = 0x05D7B20C;
 pub const RODATA_OFFSET: usize = 0x03F48000;
 
-pub const COMPARE: usize = 0x01A4B744;
+pub const COMPARE_UNIT: usize = 0x01A4B744;
+pub const COMPARE_SETUP: usize = 0x019B9624;
+pub const COMPARE_SIDE: usize = 0x01E8045C;
 pub const ITEM_AT: usize = 0x01FB8CA0;
 pub const ITEM_CRITICAL: usize = 0x01FAF990;
 pub const UNIT_ITEMS: usize = 0xB8;

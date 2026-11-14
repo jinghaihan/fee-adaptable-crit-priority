@@ -1,4 +1,4 @@
-# FEE Leif Crit Priority
+# FEE Adaptable Crit Priority
 
 Make Leif's **Adaptable** favor high-critical weapons in **Fire Emblem Engage**.
 
@@ -20,7 +20,7 @@ Weapon Crit is the weapon's stat, rather than the final combat critical rate. Cr
 
 ## Installation
 
-Download the `fee-leif-crit-priority` artifact from a successful [build](https://github.com/jinghaihan/fee-leif-crit-priority/actions/workflows/build.yml), then extract the included mod ZIP.
+Download the ZIP from [Releases](https://github.com/jinghaihan/fee-adaptable-crit-priority/releases/latest).
 
 ### Nintendo Switch
 
@@ -30,7 +30,7 @@ Install Cobalt, then extract the ZIP's `engage` directory at the SD card root.
 
 Extract `engage` into the emulator's virtual SD card root.
 
-Installed path: `engage/mods/fee_leif_crit_priority/fee_leif_crit_priority.nro`.
+Installed path: `engage/mods/fee_adaptable_crit_priority/fee_adaptable_crit_priority.nro`.
 Fully restart the game after installation or removal. This mod does not write save data.
 
 ## Credits

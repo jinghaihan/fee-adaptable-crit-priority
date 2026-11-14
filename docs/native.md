@@ -37,7 +37,7 @@ python3 -m unittest discover -s scripts -p 'test_*.py'
 python3 scripts/verify_game.py /path/to/read-only/main
 cargo skyline build --release -- --locked
 python3 -m pip install -r tools/test-requirements.txt
-python3 scripts/smoke.py target/aarch64-skyline-switch/release/libfee_leif_crit_priority.nro
+python3 scripts/smoke.py target/aarch64-skyline-switch/release/libfee_adaptable_crit_priority.nro
 ```
 
 The compiled-NRO sandbox exercises startup compatibility rejection, the comparison bridge, native stack-slot updates and a relocated native continuation. It checks register/SIMD/stack preservation even when native helper fixtures destroy volatile registers. Selection cases cover both inventory orders, ranged versus melee weapons, higher critical versus triangle/effectiveness, tied critical, exact ties, no-counter fallback, all eight native slots and randomized candidate lists. Native candidate eligibility is retained structurally; these fixtures do not claim a live-game playtest or a complete combat simulation.

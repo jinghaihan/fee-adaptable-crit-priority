@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "fee-leif-crit-priority"
+name = "fee-adaptable-crit-priority"
 version = "0.1.0"
 dependencies = [
  "skyline",

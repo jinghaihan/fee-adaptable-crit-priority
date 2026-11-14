@@ -35,10 +35,10 @@ jobs:
           restore-keys: skyline-${{ runner.os }}-
       - run: cargo skyline build --release -- --locked
       - name: Verify Cobalt imports and package NRO
-        run: python3 scripts/package.py target/aarch64-skyline-switch/release/libfee_leif_crit_priority.nro --version "$(tr -d '[:space:]' < VERSION)"
+        run: python3 scripts/package.py target/aarch64-skyline-switch/release/libfee_adaptable_crit_priority.nro --version "$(tr -d '[:space:]' < VERSION)"
       - uses: actions/upload-artifact@v7
         with:
-          name: fee-leif-crit-priority
+          name: fee-adaptable-crit-priority
           path: dist/*
           if-no-files-found: error
           retention-days: 14
@@ -50,10 +50,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
-          name: fee-leif-crit-priority
+          name: fee-adaptable-crit-priority
           path: dist
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - run: python3 -m pip install -r tools/test-requirements.txt
-      - run: python3 scripts/smoke.py dist/fee_leif_crit_priority.nro
+      - run: python3 scripts/smoke.py dist/fee_adaptable_crit_priority.nro

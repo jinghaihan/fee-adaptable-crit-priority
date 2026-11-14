@@ -63,8 +63,8 @@ class ToolsTests(unittest.TestCase):
         release.write_version("0.2.0")
         self.assertEqual(release.version(), "0.2.0")
       self.assertEqual((root / "Cargo.lock").read_text(), previous_lock.replace(
-        f'name = "fee-leif-crit-priority"\nversion = "{current}"',
-        'name = "fee-leif-crit-priority"\nversion = "0.2.0"'))
+        f'name = "fee-adaptable-crit-priority"\nversion = "{current}"',
+        'name = "fee-adaptable-crit-priority"\nversion = "0.2.0"'))
 
 
 if __name__ == "__main__":

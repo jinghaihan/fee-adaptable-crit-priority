@@ -7,7 +7,7 @@ pub mod profile;
 mod native;
 
 #[cfg(target_os = "switch")]
-#[skyline::main(name = "leifcrit")]
+#[skyline::main(name = "fee-adaptable-crit-priority")]
 pub fn skyline_main() {
   if supported_game() {
     native::install();

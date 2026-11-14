@@ -24,7 +24,7 @@ jobs:
         run: test "$GITHUB_REF_NAME" = "v$(python3 scripts/release.py --check)"
       - uses: actions/download-artifact@v8
         with:
-          name: fee-leif-crit-priority
+          name: fee-adaptable-crit-priority
           path: dist
       - name: Verify checksums
         working-directory: dist

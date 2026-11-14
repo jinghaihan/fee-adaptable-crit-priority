@@ -10,8 +10,8 @@ import zipfile
 from verify_nro import verify_nro
 
 
-NRO_NAME = "fee_leif_crit_priority.nro"
-INSTALL_PATH = f"engage/mods/fee_leif_crit_priority/{NRO_NAME}"
+NRO_NAME = "fee_adaptable_crit_priority.nro"
+INSTALL_PATH = f"engage/mods/fee_adaptable_crit_priority/{NRO_NAME}"
 
 
 def package(nro: Path, version: str, output: Path) -> list[Path]:
@@ -22,7 +22,7 @@ def package(nro: Path, version: str, output: Path) -> list[Path]:
   artifact = output / NRO_NAME
   if artifact.resolve() != nro.resolve():
     shutil.copyfile(nro, artifact)
-  archive = output / f"fee-leif-crit-priority-v{version}.zip"
+  archive = output / f"fee-adaptable-crit-priority-v{version}.zip"
   with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
     bundle.write(artifact, INSTALL_PATH)
   hashes = output / "SHA256SUMS"

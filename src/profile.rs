@@ -1,0 +1,11 @@
+pub const BUILD_ID: [u8; 16] =
+  [0x8C, 0x08, 0xB9, 0x71, 0x9E, 0x08, 0x5F, 0x91, 0x84, 0x7B, 0x5E, 0x0F, 0x93, 0x5D, 0x94, 0x88];
+pub const BUILD_ID_OFFSET: usize = 0x05D7B20C;
+pub const RODATA_OFFSET: usize = 0x03F48000;
+
+pub const COMPARE: usize = 0x01A4B744;
+pub const ITEM_AT: usize = 0x01FB8CA0;
+pub const ITEM_CRITICAL: usize = 0x01FAF990;
+pub const UNIT_ITEMS: usize = 0xB8;
+pub const BEST_SCORE: usize = 0x10;
+pub const BEST_INDEX: usize = 0x0C;

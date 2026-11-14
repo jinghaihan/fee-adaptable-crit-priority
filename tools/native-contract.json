@@ -1,0 +1,29 @@
+{
+  "build_id": "8C08B9719E085F91847B5E0F935D9488",
+  "bodies": [
+    {
+      "name": "Unit.GetRevengeWeapon",
+      "offset": 27567296,
+      "size": 4856,
+      "sha256": "ed71c0e241a0709b8332354b5bff45c983dd5b3f4374f0df67e4a2f93cbd0356"
+    },
+    {
+      "name": "UnitItem.GetCritical",
+      "offset": 33225104,
+      "size": 248,
+      "sha256": "14fd7fd0df10a0c075476410175f0c202733de65cd58dd2c2d0dcb08fa1939e0"
+    },
+    {
+      "name": "UnitItemList.get_Item",
+      "offset": 33262752,
+      "size": 52,
+      "sha256": "c47aebd5b466e9b39b3ce9aedc03dff6cd8f963789ab99f5fb95777b776d2176"
+    }
+  ],
+  "comparison_offset": 27572036,
+  "comparison_bytes": "a9035fb86802140bd34102b0f40319aa3f01086b09b1891aa8435fb808b3881aa9233e29f50f40f973ca40f9d3fcff17",
+  "loop_resume": 27568828,
+  "range_score": 16777216,
+  "item_critical_offset": 33225104,
+  "item_at_offset": 33262752
+}
